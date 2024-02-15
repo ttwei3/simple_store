@@ -34,15 +34,21 @@ products = CSV.parse(csv_data, headers: true)
 products.each do |product|
   category_name = product[:category]
   category_name = category_name.split(',').first if category_name&.include?(',')
-  category = Category.find_or_create_by(name: category_name) if category_name
-
-  Product.create(
-    title: product[:name],
-    description: product[:description],
-    price: product[:price],
-    stock_quantity: product[:stock_quantity],
-    category: category
-  )
+  if category_name
+    category = Category.find_or_create_by(name: category_name)
+    if category
+      Product.create(
+        title: product['name'],
+        description: product['description'],
+        price: product['price'],
+        stock_quantity: product['stock quantity'],
+        category: category
+      )
+    else
+      Rails.logger.warn "Category could not be created for name: #{category_name}"
+    end
+  end
 end
+
 
 # Where "category_name" is the category name as a string. You will need to get this from the data returned from the csv library.
