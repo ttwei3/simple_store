@@ -7,7 +7,6 @@
 #   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
-require "csv"
 
 =begin
 676.times do
@@ -17,38 +16,38 @@ require "csv"
     stock_quantity: Faker::Number.number
   )
 end
+puts "Created 676 products successfully."
 =end
+
+require "csv"
 
 Product.destroy_all
 
 Category.destroy_all
 
+# Set the path to the CSV file
 csv_file = Rails.root.join('db/products.csv')
+
+# Read the CSV data
 csv_data = File.read(csv_file)
 
-products = CSV.parse(csv_data, headers: true)
+# Parse the CSV data with headers in windows
+products = CSV.parse(csv_data, headers: true, encoding: 'utf-8')
 
-# If CSV was created by Excel in Windows you may also need to set an encoding type:
-# products = CSV.parse(csv_data, headers: true, encoding: 'iso-8859-1')
+products.each do |row|
+  category_name = row['category'] # Adjust the header name if necessary
 
-products.each do |product|
-  category_name = product[:category]
-  category_name = category_name.split(',').first if category_name&.include?(',')
-  if category_name
-    category = Category.find_or_create_by(name: category_name)
-    if category
-      Product.create(
-        title: product['name'],
-        description: product['description'],
-        price: product['price'],
-        stock_quantity: product['stock quantity'],
-        category: category
-      )
-    else
-      Rails.logger.warn "Category could not be created for name: #{category_name}"
-    end
-  end
+  # Find the category by name, or create it if it doesn't exist
+  category = Category.find_or_create_by!(name: category_name)
+
+  # Now create a product associated with this category
+  Product.create!(
+    title: row['name'], # 'name' header for the product's title
+    price: row['price'].to_d, # Convert price to decimal
+    description: row['description'],
+    stock_quantity: row['stock quantity'].to_i, # Convert stock quantity to integer
+    category: category  # Set the category_id foreign key
+  )
 end
 
-
-# Where "category_name" is the category name as a string. You will need to get this from the data returned from the csv library.
+puts "Imported #{products.size} products"
