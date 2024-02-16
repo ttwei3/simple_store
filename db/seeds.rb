@@ -25,28 +25,26 @@ Product.destroy_all
 
 Category.destroy_all
 
-# Set the path to the CSV file
+# Set the path to the CSV file and read CSV data
 csv_file = Rails.root.join('db/products.csv')
-
-# Read the CSV data
 csv_data = File.read(csv_file)
 
 # Parse the CSV data with headers in windows
 products = CSV.parse(csv_data, headers: true, encoding: 'utf-8')
 
 products.each do |row|
-  category_name = row['category'] # Adjust the header name if necessary
+  category_name = row['category']
 
-  # Find the category by name, or create it if it doesn't exist
+  # Find the category by name,if it doesn't exist, create it
   category = Category.find_or_create_by!(name: category_name)
 
   # Now create a product associated with this category
   Product.create!(
-    title: row['name'], # 'name' header for the product's title
-    price: row['price'].to_d, # Convert price to decimal
+    title: row['name'],
+    price: row['price'].to_d,
     description: row['description'],
-    stock_quantity: row['stock quantity'].to_i, # Convert stock quantity to integer
-    category: category  # Set the category_id foreign key
+    stock_quantity: row['stock quantity'].to_i,
+    category: category  #foreign key
   )
 end
 
